@@ -1,0 +1,10 @@
+/** Output is 1 when all three input bits are same. Else, output is 0. */
+CHIP ExampleEq3 {
+  IN a, b, c;
+  OUT out;
+  PARTS:
+  Xor(a=a, b=b, out=neq1); // Xor(a,b) -> neq1
+  Xor(a=b, b=c, out=neq2); // Xor(b,c) -> neq2
+  Or(a=neq1, b=neq2, out=outOr); //Or(neq1, neq2) -> outOr
+  Not(in=outOr, out=out); // Not(outOr) -> out
+}
