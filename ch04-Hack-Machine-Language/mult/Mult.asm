@@ -10,3 +10,34 @@
 // R0 >= 0, R1 >= 0, and R0*R1 < 32768.
 
 // Put your code here.
+
+// pseudo-code
+// R2 = R1 * R0;
+
+@sum
+M=0
+(LOOP)
+// if R0 is 0, then STOP
+  @R0
+  D=M
+  @STOP
+  D;JEQ
+// sum = sum + R1
+  @R1
+  D=M
+  @sum
+  M=D+M
+// R0 - 1
+  @R0
+  M=M-1
+// goto LOOP
+  @LOOP
+  0;JMP
+(STOP)
+  @sum
+  D=M
+  @R2
+  M=D  
+(END)
+  @END
+  0;JMP
