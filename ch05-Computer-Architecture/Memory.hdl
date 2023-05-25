@@ -28,4 +28,24 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+    /* pseudo-code
+        if address[14] = 1 and address[13] = 0 -> screen
+        if address[14] = 1 and address[13] = 1 -> keyboard
+        else (if address[14] = 0) -> RAM
+    */
+    // Check where to go(RAM or IO Memory)
+    DMux(in=load, sel=address[14], a=memload, b=ioload);
+    
+    // Set appropriate address value for memory mapping
+    Not16(in[0..14]=address, in[15]=true, out[0..13]=notscreenaddress);
+    Not16(in[0..13]=notscreenaddress, in[14..15]=false, out[0..12]=screenaddress, out[0..13]=memaddress);
+    
+    // insert appropriate load and address for each device
+    Keyboard(out=keyboardout);
+    Screen(in=in, load=ioload, address=screenaddress, out=screenout);
+    RAM16K(in=in, load=memload, address=memaddress, out=ramout);
+    
+    // Determine which output should go out
+    Or16(a=keyboardout, b=screenout, out=ioout);
+    Mux16(a=ramout, b=ioout, sel=address[14], out=out);
 }
