@@ -40,4 +40,47 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+    Mux16(a=instruction, b=ALUout, sel=instruction[15], out=selectedVal); // if a-instruction, select it. else, select ALU output.
+    Mux(a=true, b=instruction[5], sel=instruction[15], out=loadA);
+    Mux(a=false, b=instruction[4], sel=instruction[15], out=loadD);
+
+    DRegister(in=ALUout, load=loadD, out=operand1); // D register
+
+    ARegister(in=selectedVal, load=loadA, out=outAReg, out[0..14]=addressM); // A register
+    Mux16(a=outAReg, b=inM, sel=instruction[12], out=operand2);
+
+    And(a=instruction[11], b=instruction[15], out=czx);
+    And(a=instruction[10], b=instruction[15], out=cnx);
+    And(a=instruction[9], b=instruction[15], out=czy);
+    And(a=instruction[8], b=instruction[15], out=cny);
+    And(a=instruction[7], b=instruction[15], out=cf);
+    And(a=instruction[6], b=instruction[15], out=cno);
+
+    ALU(x=operand1, y=operand2,
+        zx=czx, nx=cnx, zy=czy, ny=cny, f=cf, no=cno,
+        out=ALUout, zr=zrFlag, ng=ngFlag);
+    Or16(a=ALUout, b=false, out=outM);
+
+    // write or read Memory
+    And(a=instruction[3], b=instruction[15], out=writeM);
+
+    // jmp or not for PC
+    Or(a=zrFlag, b=ngFlag, out=zrORngFlag); // (LE)
+    Not(in=zrORngFlag, out=pFlag); // positive (GT)
+
+    And(a=instruction[0], b=instruction[15], out=pCondition);
+    And(a=instruction[1], b=instruction[15], out=zrCondition);
+    And(a=instruction[2], b=instruction[15], out=ngCondition);
+
+    And(a=pFlag, b=pCondition, out=GTjmp);
+    And(a=zrFlag, b=zrCondition, out=EQjmp);
+    And(a=ngFlag, b=ngCondition, out=LTjmp);
+
+    Or(a=GTjmp, b=EQjmp, out=GEjmp);
+    Or(a=GEjmp, b=LTjmp, out=jmpFlag);
+
+    Not(in=jmpFlag, out=incFlag);
+
+    PC(in=outAReg, load=jmpFlag, inc=incFlag, reset=reset, out[0..14]=pc); // Program Counter
 }
